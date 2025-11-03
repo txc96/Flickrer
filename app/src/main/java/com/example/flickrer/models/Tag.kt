@@ -1,5 +1,6 @@
 package com.example.flickrer.models;
 
+// Model class representing a tag associated with a photo from Flickr API
 data class Tag (
     val id: String,
     val author: String,

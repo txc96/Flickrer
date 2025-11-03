@@ -1,5 +1,4 @@
-// File: `java/com/example/flickrer/compose/SearchBar.kt`
-package com.example.flickrer.compose
+package com.example.flickrer.compose.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,10 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.flickrer.FlickrerViewModel
@@ -47,6 +42,7 @@ fun SearchBar(
             onValueChange = { text.value = it },
             placeholder = { Text(hint) },
             singleLine = true,
+            // todo
             /*leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }*/
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
@@ -81,8 +77,11 @@ fun SearchBar(
     }
 }
 
+// Helper method to update text in viewmodel and fetch photos, reducing duplicate code
 fun updateText(viewModel: FlickrerViewModel, value: String, focusManager: FocusManager){
     viewModel.setText(value)
     viewModel.fetchPhotos()
     focusManager.clearFocus()
 }
+
+// todo preview

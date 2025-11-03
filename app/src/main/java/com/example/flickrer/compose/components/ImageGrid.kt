@@ -1,98 +1,82 @@
-// kotlin
 // Requires: implementation("io.coil-kt:coil-compose:<latest-version>")
 
-package com.example.flickrer.ui
+package com.example.flickrer.compose.components
 
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.example.flickrer.FlickrerViewModel
-import com.example.flickrer.models.Photo
 import com.example.flickrer.R
-import com.example.flickrer.compose.components.ExpandableCard
-import com.example.flickrer.models.Tag
+import com.example.flickrer.models.Photo
 
 @Composable
 fun ImageGrid(
     viewModel: FlickrerViewModel,
+    focusManager: FocusManager,
     images: List<Photo>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(8.dp),
-    spacing: Dp = 8.dp
+    spacing: Dp = 8.dp,
+    maxColumns: Int = 3
 ) {
-    //todo if reach end of scroll, fetch next page of images
-    val scrollState = ScrollState(0)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-        FlowRow(
-            modifier = Modifier
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(spacing),
-            verticalArrangement = Arrangement.spacedBy(spacing),
-            maxItemsInEachRow = 3
-        ) {
-            images.map {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(maxColumns),
+        contentPadding = contentPadding,
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalArrangement = Arrangement.spacedBy(spacing),
+        modifier = modifier.fillMaxSize(),
+        content = {
+            items(
+                images,
+                // set span if photo is expanded
+                span = { item ->
+                    if(item.expanded) GridItemSpan(currentLineSpan = maxColumns)
+                        else GridItemSpan(currentLineSpan = 1)
+                }
+            ) { photo ->
                 ExpandableCard(
-                    modifier = Modifier.clip(RoundedCornerShape(6.dp)),
-                    photo = it,
-                    viewModel = viewModel
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(6.dp)),
+                    photo = photo,
+                    viewModel = viewModel,
+                    focusManager = focusManager
                 ) {
-                    val url = stringResource(R.string.url_format).format(it.server, it.id, it.secret)
+                    // construct photo url for coil from Flickr response
+                    val url = stringResource(R.string.url_format).format(photo.server, photo.id, photo.secret)
                     AsyncImage(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxSize(),
                         model = url,
                         contentDescription = null
                     )
                 }
             }
-        }
-    }
-
-    /*LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        contentPadding = contentPadding,
-        horizontalArrangement = Arrangement.spacedBy(spacing),
-        verticalArrangement = Arrangement.spacedBy(spacing),
-        modifier = modifier.fillMaxSize()
-    ) {
-        itemsIndexed(images) { _, photo ->
-            ExpandableCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-            ) {
-                val url = stringResource(R.string.url_format).format(photo.server, photo.id, photo.secret)
-                AsyncImage(
-                    model = url,
-                    contentDescription = null
-                )
+            // append item to the end of the grid, which if rendered, triggers fetching next page
+            item{
+                LaunchedEffect(true) {
+                    viewModel.fetchPhotos(viewModel.page.value+1)
+                }
             }
         }
-    }*/
+    )
 }
 
+// todo preview
 @Preview(showBackground = true)
 @Composable
 private fun ImageGridPreview() {

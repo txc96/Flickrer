@@ -19,6 +19,7 @@ fun Overlay() {
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color.Black.copy(alpha = 0.5f))
+        // force overlay on top
         .zIndex(1f)
     ) {
         Column(modifier = Modifier
@@ -27,7 +28,10 @@ fun Overlay() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp))
         {
+            // todo
             CircularProgressIndicator(color = Color.White)
         }
     }
 }
+
+//todo preview
