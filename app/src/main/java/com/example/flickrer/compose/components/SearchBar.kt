@@ -68,11 +68,6 @@ fun SearchBar(
 
                 }*/
                 .padding(horizontal = 12.dp, vertical = 8.dp)
-                .onFocusChanged { state ->
-                    if (!state.isFocused) {
-                        updateText(viewModel, text.value, focusManager)
-                    }
-                }
         )
     }
 }
