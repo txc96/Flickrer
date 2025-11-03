@@ -53,17 +53,16 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 // Build URL with parameters
-                var parameters = ""
-
-                // could be cleaned up with a string builder
-                if(!searchText.value.isNullOrEmpty()) {
-                    parameters += "&text=${searchText.value}"
-                }
-                if(selectedTags.value.isNotEmpty()) {
-                    parameters += "&tags=${(selectedTags.value as Iterable<Any?>).joinToString(",")}"
-                }
-                if(page > 1) {
-                    parameters += "&page=$page"
+                val parameters = buildString {
+                    if(!searchText.value.isNullOrEmpty()) {
+                        append("&text=${searchText.value}")
+                    }
+                    if(selectedTags.value.isNotEmpty()) {
+                        append("&tags=${(selectedTags.value as Iterable<Any?>).joinToString(",")}")
+                    }
+                    if(page > 1) {
+                        append("&page=$page")
+                    }
                 }
 
                 val url = getApplication<Application>().getString(R.string.get_photos_url).format(
