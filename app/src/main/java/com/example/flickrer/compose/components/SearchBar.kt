@@ -27,10 +27,11 @@ import com.example.flickrer.FlickrerViewModel
 @Composable
 fun SearchBar(
     viewModel: FlickrerViewModel,
+    focusManager: FocusManager,
     modifier: Modifier = Modifier,
     hint: String = "Search",
 ) {
-    val focusManager = LocalFocusManager.current
+
     val text = remember { mutableStateOf("") }
 
     Surface(

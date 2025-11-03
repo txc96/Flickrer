@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Flickrer</string>
     <string name="action_settings">Settings</string>
-    <string name="url_format">https://live.staticflickr.com/%1$s/%2$s_%3$s_b.jpg</string>
+    <string name="url_format">https://live.staticflickr.com/%1$s/%2$s_%3$s.jpg</string>
     <string name="get_photos_url">https://www.flickr.com/services/rest/?method=flickr.photos.%1$s&amp;api_key=a0222db495999c951dc33702500fdc4d%2$s&amp;format=json&amp;nojsoncallback=1</string>
     <string name="get_tags_url">https://www.flickr.com/services/rest/?method=flickr.tags.getListPhoto&amp;api_key=a0222db495999c951dc33702500fdc4d&amp;photo_id=%1$s&amp;format=json&amp;nojsoncallback=1</string>
 </resources>

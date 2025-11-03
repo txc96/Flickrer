@@ -13,10 +13,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.lang.Thread.sleep
 import java.net.HttpURLConnection
 import java.net.URL
 
 class FlickrerViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     private val _photos = MutableStateFlow<List<Photo>>(emptyList())
     val photos: StateFlow<List<Photo>> = _photos.asStateFlow()
 
@@ -26,13 +30,11 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
     private val _selectedTags = MutableStateFlow<List<Tag>?>(null)
     val selectedTags: StateFlow<List<Tag>?> = _selectedTags.asStateFlow()
 
-    private val _activeImageTags = MutableStateFlow<List<Tag>?>(null)
-    val activeImageTags: StateFlow<List<Tag>?> = _activeImageTags.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    private val _error = MutableStateFlow("")
+    val error: StateFlow<String> = _error.asStateFlow()
 
     fun fetchPhotos() {
+        _isLoading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 var parameters = ""
@@ -57,7 +59,8 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
 
                 connection.inputStream.bufferedReader().use { reader ->
                     val body = reader.readText()
-                    if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val stat = JSONObject(body).optString("stat")
+                    if (connection.responseCode == HttpURLConnection.HTTP_OK && stat == "ok") {
                         Log.d("FlickrerViewModel", "Response: $body")
                         val res = JSONObject(body).optJSONObject("photos")
                         val pageNum = res?.optInt("page")
@@ -83,25 +86,32 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
                             }
                         }
 
+                        sleep(1000) // Simulate loading delay
+
                         _photos.value = list
-                        _error.value = null
+                        _error.value = ""
                     } else {
-                        _error.value = "HTTP ${connection.responseCode}"
+                        val failMessage = JSONObject(body).optString("message")
+                        _error.value = if(connection.responseCode == HttpURLConnection.HTTP_OK) "Error: $failMessage"
+                        else "HTTP ${connection.responseCode}"
+
                     }
+                    _isLoading.value = false
                 }
                 connection.disconnect()
             } catch (t: Throwable) {
                 Log.d("FlickrerViewModel", "Error: ${t.message}")
                 _error.value = t.message ?: "Unknown error"
+                _isLoading.value = true
             }
         }
     }
 
-    fun fetchTags(id: String) {
+    fun fetchTags(photo: Photo) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
 
-                val url = getApplication<Application>().getString(R.string.get_tags_url).format(id)
+                val url = getApplication<Application>().getString(R.string.get_tags_url).format(photo.id)
 
                 val connection = (URL(url).openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
@@ -113,7 +123,8 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
 
                 connection.inputStream.bufferedReader().use { reader ->
                     val body = reader.readText()
-                    if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val stat = JSONObject(body).optString("stat")
+                    if (connection.responseCode == HttpURLConnection.HTTP_OK && stat == "ok") {
                         Log.d("FlickrerViewModel", "Response: $body")
                         val res = JSONObject(body).optJSONObject("photo")
                         val tagList = res?.optJSONObject("tags")?.optJSONArray("tag")
@@ -134,18 +145,29 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
                             }
                         }
 
-                        _activeImageTags.value = list
-                        _error.value = null
+                        photo.copy(tags = list)
+                        _photos.emit(_photos.value)
+                        _error.value = ""
                     } else {
-                        _error.value = "HTTP ${connection.responseCode}"
+                        val failMessage = JSONObject(body).optString("message")
+                        _error.value = if(connection.responseCode == HttpURLConnection.HTTP_OK) "Error: $failMessage"
+                        else "HTTP ${connection.responseCode}"
                     }
+                    _isLoading.value = false
                 }
                 connection.disconnect()
             } catch (t: Throwable) {
                 Log.d("FlickrerViewModel", "Error: ${t.message}")
                 _error.value = t.message ?: "Unknown error"
+                _isLoading.value = false
             }
         }
+    }
+
+    fun refresh(){
+        _searchText.update { null }
+        _selectedTags.update { null }
+        fetchPhotos()
     }
 
     fun setText(query: String) {
@@ -154,10 +176,6 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
 
     fun setSelectedTags(tags: List<Tag>) {
         _selectedTags.update { tags }
-    }
-
-    fun setActiveImageTags(tags: List<Tag>) {
-        _activeImageTags.update { tags }
     }
 
 }

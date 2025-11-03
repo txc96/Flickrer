@@ -13,7 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -26,23 +31,21 @@ import com.example.flickrer.models.Tag
 @Composable
 fun ExpandableCard(
     modifier: Modifier = Modifier,
-    collapsedImageHeight: Dp = 80.dp,
-    expandedImageHeight: Dp = 240.dp,
+    collapsedImageWidth: Dp = 80.dp,
     collapsedElevation: Dp = 2.dp,
     expandedElevation: Dp = 8.dp,
     title: String = "Title",
     detail: String  = "Detailed text shown when expanded",
     photo: Photo,
-    tags: List<Tag>?,
     viewModel: FlickrerViewModel,
     body: @Composable () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val focusRequester: FocusRequester = remember { FocusRequester() }
 
     // Animate the image height and the elevation when toggling
-    //todo for flow row replace with weight modifier
-    val imageHeight by animateDpAsState(
-        targetValue = if (expanded) expandedImageHeight else collapsedImageHeight,
+    val imageWidth by animateDpAsState(
+        targetValue = if (expanded) GetScreenWidthDp() else collapsedImageWidth,
         animationSpec = tween(durationMillis = 300)
     )
     val elevation by animateDpAsState(
@@ -54,7 +57,7 @@ fun ExpandableCard(
         modifier = modifier
             .clickable {
                 if (!expanded) {
-                    viewModel.fetchTags(photo.id)
+                    viewModel.fetchTags(photo)
                 }
                 expanded = !expanded
             }
@@ -73,11 +76,16 @@ fun ExpandableCard(
             // Top area (image placeholder here) resizes between collapsed/expanded heights
             Box(
                 modifier = Modifier
-                    .width(imageHeight)
-                    //todo height should determine from the image
-                    .height(imageHeight)
+                    .width(imageWidth)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFCCCCCC)),
+                    .background(Color(0xFFCCCCCC))
+                    .then(
+                        if(expanded)
+                            //todo this is no longer working
+                            Modifier.wrapContentHeight()
+                        else
+                            Modifier.height(collapsedImageWidth)
+                    ),
                 contentAlignment = Alignment.Center
             ) { body() }
 
@@ -90,9 +98,33 @@ fun ExpandableCard(
                 Column(modifier = Modifier
                     .padding(top = 12.dp)
                 ) {
-                    if(tags != null) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.White),
+                        contentAlignment = Alignment.CenterStart,
+
+                    ){
+                        //todo strings.xml
+                        Text(
+                            text = photo.owner.ifEmpty { "No owner" },
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                        Text(
+                            text = photo.title.ifEmpty { "No Title" },
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                    if(photo.tags.isNullOrEmpty()) {
                         FlowRow() {
-                            tags.map {
+                            //todo tags not showing
+                            photo.tags?.map {
                                 Text(
                                     text = it.content,
                                     fontSize = 12.sp,
@@ -106,8 +138,24 @@ fun ExpandableCard(
                             }
                         }
                     }
+                    else{
+                        Text(
+                            text = "No tags...",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+fun GetScreenWidthDp(): Dp {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp
+    return screenWidthDp
 }

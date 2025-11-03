@@ -9,5 +9,6 @@ data class Photo(
     val title: String,
     val ispublic: Int,
     val isfriend: Int,
-    val isfamily: Int
+    val isfamily: Int,
+    val tags: List<Tag>? = null
 )

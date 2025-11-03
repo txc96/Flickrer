@@ -9,9 +9,11 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -20,6 +22,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -35,13 +39,12 @@ import com.example.flickrer.models.Tag
 fun ImageGrid(
     viewModel: FlickrerViewModel,
     images: List<Photo>,
-    tags: List<Tag>?,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(8.dp),
     spacing: Dp = 8.dp
 ) {
+    //todo if reach end of scroll, fetch next page of images
     val scrollState = ScrollState(0)
-    //todo need to add scrolling
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         FlowRow(
             modifier = Modifier
@@ -54,7 +57,6 @@ fun ImageGrid(
                 ExpandableCard(
                     modifier = Modifier.clip(RoundedCornerShape(6.dp)),
                     photo = it,
-                    tags = tags,
                     viewModel = viewModel
                 ) {
                     val url = stringResource(R.string.url_format).format(it.server, it.id, it.secret)
