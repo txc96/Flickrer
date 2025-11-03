@@ -25,12 +25,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -54,12 +52,6 @@ fun ExpandableCard(
     focusManager: FocusManager,
     body: @Composable () -> Unit
 ) {
-
-    // Animate the image height and the elevation when toggling
-    val imageWidth by animateDpAsState(
-        targetValue = if (photo.expanded) GetScreenWidthDp() else collapsedImageWidth,
-        animationSpec = tween(durationMillis = 300)
-    )
     val elevation by animateDpAsState(
         targetValue = if (photo.expanded) expandedElevation else collapsedElevation,
         animationSpec = tween(durationMillis = 300)

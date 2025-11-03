@@ -27,7 +27,7 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
     private val _photos = MutableStateFlow<MutableList<Photo>>(mutableListOf())
     val photos: StateFlow<MutableList<Photo>> = _photos.asStateFlow()
 
-    private val _page = MutableStateFlow<Int>(1)
+    private val _page = MutableStateFlow<Int>(0)
     val page: StateFlow<Int> = _page.asStateFlow()
 
     private val _searchText = MutableStateFlow<String?>(null)
@@ -48,7 +48,7 @@ class FlickrerViewModel(application: Application) : AndroidViewModel(application
 
     // Fetch photos from Flickr API
     // parameter: page - page number for pagination (defaults to 1 aka first result)
-    fun fetchPhotos(page: Int = 1) {
+    fun fetchPhotos(page: Int = 0) {
         _isLoading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
