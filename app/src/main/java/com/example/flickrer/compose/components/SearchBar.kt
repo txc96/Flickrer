@@ -16,7 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -55,11 +57,19 @@ fun SearchBar(
                 }
             ),
             modifier = Modifier
-                .onKeyEvent{
-                    it.type == KeyEventType.KeyUp {
-                        updateText(viewModel, text.value, focusManager)
+                // Not implementing since this could be "spammy" to the API and user experience
+                // But if we wanted a search that updated as you typed, this is one way to go
+                // about it.
+                /*.onKeyEvent{
+                    when{
+                        it.type == KeyEventType.KeyUp -> {
+                            updateText(viewModel, text.value, focusManager)
+                            true
+                        }
+                        else -> false
                     }
-                }
+
+                }*/
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .onFocusChanged { state ->
                     if (!state.isFocused) {

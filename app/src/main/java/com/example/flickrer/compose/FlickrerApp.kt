@@ -11,7 +11,12 @@ import androidx.compose.runtime.collectAsState
 fun FlickrerApp() {
     val viewModel = viewModel<FlickrerViewModel>()
     Column {
+        //TODO Header
         SearchBar(viewModel = viewModel)
-        ImageGrid(viewModel.photos.collectAsState().value)
+        ImageGrid(
+            viewModel = viewModel,
+            viewModel.photos.collectAsState().value,
+            tags = viewModel.activeImageTags.collectAsState().value
+        )
     }
 }
