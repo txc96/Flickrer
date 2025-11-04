@@ -15,5 +15,5 @@ Pending Issues:
 - The app needs a theme/styling, right now it is using basic colors loaded by default
 - Compose previews and unit tests need to be added to the app
 
-- AI Use:
+AI Use:
 - No external AI assistant was used in the project, IntelliJ hints were utilized to save on time. A video of that can be found in: Videos/IntelliJ_AI_Assistant.mp4
